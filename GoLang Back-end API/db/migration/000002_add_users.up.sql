@@ -1,0 +1,8 @@
+CREATE TABLE IF NOT EXISTS users (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    username VARCHAR(255) NOT NULL UNIQUE,
+    password_hash VARCHAR(255) NOT NULL
+);
+
+ALTER TABLE books ADD COLUMN user_id INT NOT NULL;
+ALTER TABLE books ADD CONSTRAINT fk_books_users FOREIGN KEY (user_id) REFERENCES users(id);
