@@ -58,11 +58,20 @@ func main() {
 	mux.HandleFunc("POST /login", authHandler.Login)
 
 	// Protected routes
+	mux.HandleFunc("GET /profile", middleware.AuthMiddleware(authHandler.GetProfile))
+	mux.HandleFunc("PUT /profile", middleware.AuthMiddleware(authHandler.UpdateProfile))
 	mux.HandleFunc("POST /books", middleware.AuthMiddleware(bookHandler.CreateBook))
 	mux.HandleFunc("GET /books", middleware.AuthMiddleware(bookHandler.GetAllBooks))
 	mux.HandleFunc("GET /books/{id}", middleware.AuthMiddleware(bookHandler.GetBookByID))
 	mux.HandleFunc("PUT /books/{id}", middleware.AuthMiddleware(bookHandler.UpdateBook))
 	mux.HandleFunc("DELETE /books/{id}", middleware.AuthMiddleware(bookHandler.DeleteBook))
+
+	// Upload route
+	uploadHandler := handlers.NewUploadHandler()
+	mux.HandleFunc("POST /upload", uploadHandler.UploadFile) // Authenticated? Maybe. Let's keep it open for now or add auth.
+	// Serving static files
+	fs := http.FileServer(http.Dir("./uploads"))
+	mux.Handle("GET /uploads/", http.StripPrefix("/uploads/", fs))
 
 	log.Println("Server starting on :8080")
 	// Wrap mux with CORS middleware

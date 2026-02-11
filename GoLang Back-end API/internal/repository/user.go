@@ -31,15 +31,52 @@ func (r *UserRepository) Create(user *models.User) error {
 }
 
 func (r *UserRepository) GetByUsername(username string) (*models.User, error) {
-	query := "SELECT id, username, password_hash FROM users WHERE username = ?"
+	query := "SELECT id, username, password_hash, bio, avatar_url FROM users WHERE username = ?"
 	row := r.DB.QueryRow(query, username)
 
 	var user models.User
-	if err := row.Scan(&user.ID, &user.Username, &user.PasswordHash); err != nil {
+	var bio, avatarURL sql.NullString
+	if err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &bio, &avatarURL); err != nil {
+		if err == sql.ErrNoRows {
+			return nil, nil // Or return a specific error
+		}
+		return nil, fmt.Errorf("failed to get user: %w", err)
+	}
+	if bio.Valid {
+		user.Bio = bio.String
+	}
+	if avatarURL.Valid {
+		user.AvatarURL = avatarURL.String
+	}
+	return &user, nil
+}
+
+func (r *UserRepository) GetByID(id int) (*models.User, error) {
+	query := "SELECT id, username, password_hash, bio, avatar_url FROM users WHERE id = ?"
+	row := r.DB.QueryRow(query, id)
+
+	var user models.User
+	var bio, avatarURL sql.NullString
+	if err := row.Scan(&user.ID, &user.Username, &user.PasswordHash, &bio, &avatarURL); err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
 		}
 		return nil, fmt.Errorf("failed to get user: %w", err)
 	}
+	if bio.Valid {
+		user.Bio = bio.String
+	}
+	if avatarURL.Valid {
+		user.AvatarURL = avatarURL.String
+	}
 	return &user, nil
+}
+
+func (r *UserRepository) Update(user *models.User) error {
+	query := "UPDATE users SET bio = ?, avatar_url = ? WHERE id = ?"
+	_, err := r.DB.Exec(query, user.Bio, user.AvatarURL, user.ID)
+	if err != nil {
+		return fmt.Errorf("failed to update user: %w", err)
+	}
+	return nil
 }

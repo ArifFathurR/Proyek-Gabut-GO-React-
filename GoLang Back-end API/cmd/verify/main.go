@@ -44,9 +44,10 @@ func main() {
 	// 3. Create Book (Protected)
 	fmt.Println("Creating book...")
 	book := map[string]interface{}{
-		"title":  "Secured Go",
-		"author": "Security Expert",
-		"year":   2024,
+		"title":     "Secured Go",
+		"author":    "Security Expert",
+		"year":      2024,
+		"image_url": "http://example.com/image.png",
 	}
 	if err := request("POST", "/books", book, token); err != nil {
 		fatal("Failed to create book", err)

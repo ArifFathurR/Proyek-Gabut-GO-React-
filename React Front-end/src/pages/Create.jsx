@@ -7,6 +7,9 @@ export default function Create() {
     const [title, setTitle] = useState('');
     const [author, setAuthor] = useState('');
     const [year, setYear] = useState('');
+    const [image_url, setImageUrl] = useState('');
+    const [status, setStatus] = useState('on_hold');
+    const [uploading, setUploading] = useState(false);
     const navigate = useNavigate();
 
     const handleSubmit = async (e) => {
@@ -15,13 +18,40 @@ export default function Create() {
             await api.post('/books', {
                 title,
                 author,
-                year: parseInt(year) // Ensure year is sent as integer
+                author,
+                year: parseInt(year),
+                image_url,
+                status
             });
             toast.success('Book created successfully');
             navigate('/dashboard');
         } catch (error) {
             console.error(error);
             toast.error('Failed to create book');
+        }
+    };
+
+    const handleFileChange = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        const formData = new FormData();
+        formData.append('file', file);
+        setUploading(true);
+
+        try {
+            const response = await api.post('/upload', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            setImageUrl(response.data.url);
+            toast.success('Image uploaded successfully');
+        } catch (error) {
+            console.error('Upload failed:', error);
+            toast.error('Failed to upload image');
+        } finally {
+            setUploading(false);
         }
     };
 
@@ -63,12 +93,43 @@ export default function Create() {
                             placeholder="Publication Year"
                         />
                     </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-2">Book Cover Image</label>
+                        <input
+                            type="file"
+                            className="form-input"
+                            accept="image/*"
+                            onChange={handleFileChange}
+                        />
+                        {image_url && (
+                            <div className="mt-2">
+                                <p className="text-xs text-slate-500 mb-1">Preview:</p>
+                                <img src={image_url} alt="Preview" className="h-32 rounded border border-slate-600" />
+                            </div>
+                        )}
+                    </div>
+                    <div>
+                        <label className="block text-sm font-medium text-slate-400 mb-2">Status</label>
+                        <select
+                            className="form-input"
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value)}
+                        >
+                            <option value="on_hold">On Hold</option>
+                            <option value="reading">Reading</option>
+                            <option value="finished">Finished</option>
+                        </select>
+                    </div>
                     <div className="flex gap-4 pt-4">
                         <Link to="/dashboard" className="btn btn-link flex-1">
                             Cancel
                         </Link>
-                        <button type="submit" className="btn btn-primary flex-1">
-                            Create Book
+                        <button
+                            type="submit"
+                            className="btn btn-primary flex-1"
+                            disabled={uploading}
+                        >
+                            {uploading ? 'Uploading...' : 'Create Book'}
                         </button>
                     </div>
                 </form>
