@@ -6,14 +6,17 @@ ifneq (,$(wildcard ./.env))
     export
 endif
 
+# Force using "docker compose" (v2) which is standard now
+DOCKER_COMPOSE_CMD := docker compose
+
 up:
-	docker-compose -f docker-compose.prod.yml up -d
+	$(DOCKER_COMPOSE_CMD) -f docker-compose.prod.yml up -d
 
 down:
-	docker-compose -f docker-compose.prod.yml down
+	$(DOCKER_COMPOSE_CMD) -f docker-compose.prod.yml down
 
 build:
-	docker-compose -f docker-compose.prod.yml build
+	$(DOCKER_COMPOSE_CMD) -f docker-compose.prod.yml build
 
 logs:
-	docker-compose -f docker-compose.prod.yml logs -f
+	$(DOCKER_COMPOSE_CMD) -f docker-compose.prod.yml logs -f
