@@ -41,7 +41,7 @@ services:
     container_name: book_web
     restart: always
     ports:
-      - "80:80"
+      - "8081:80"
     depends_on:
       - api
     networks:
