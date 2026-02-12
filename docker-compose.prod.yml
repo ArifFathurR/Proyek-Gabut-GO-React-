@@ -10,6 +10,8 @@ services:
       MYSQL_PASSWORD: ${DB_PASSWORD}
     volumes:
       - db_data:/var/lib/mysql
+      # Mount the SQL dump to be executed on first startup
+      - ./GoLang Back-end API/books.sql:/docker-entrypoint-initdb.d/init.sql
     networks:
       - app_network
     healthcheck:
@@ -46,20 +48,6 @@ services:
       - api
     networks:
       - app_network
-
-  migrator:
-    image: migrate/migrate
-    networks:
-      - app_network
-    volumes:
-      - ./GoLang Back-end API/db/migration:/migrations
-    command:
-      - -path=/migrations/
-      - -database=mysql://${DB_USER}:${DB_PASSWORD}@tcp(db:3306)/${DB_NAME}
-      - up
-    depends_on:
-      db:
-        condition: service_healthy
 
 volumes:
   db_data:
